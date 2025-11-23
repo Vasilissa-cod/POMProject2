@@ -109,13 +109,6 @@ public class POMFlightsTests {
         flightsList.registerToFirstFlight();
     }
 
-    @Step("Ввести неправильный номер паспорта")
-    void stepSetWrongPassportNumber(String passportNumber) {
-        RegistrationPage registrationPage = new RegistrationPage();
-        registrationPage.setPassportNumber(passportNumber);
-        registrationPage.finishRegistration();
-    }
-
     @Step("Проверить, что номер паспорта неправильный")
     void stepVerifyWrongPassportNumber() {
         RegistrationPage registrationPage = new RegistrationPage();

@@ -36,12 +36,20 @@ src/
 ## Тестовые сценарии
 
 ### POMFlightsTests
+
+**Базовые тесты:**
 1. Неуспешный логин
 2. Не задана дата вылета
 3. Не найдены рейсы
 4. Неправильный номер паспорта
 5. Успешная регистрация
 6. Сложный сценарий (комбинация нескольких проверок)
+
+**Тесты валидации:**
+7. Некорректный email (без символа @)
+8. Некорректный номер паспорта (буквы)
+9. Некорректное ФИО (цифры)
+10. Дата рейса в прошлом
 
 ### SimpleFlightsTests
 Аналогичные тесты, написанные без использования Page Object Model.
@@ -62,6 +70,24 @@ src/
 ### Запуск конкретного теста
 ```bash
 ./gradlew test --tests POMFlightsTests.test01WrongPassword
+```
+
+### Запуск тестов валидации
+```bash
+# Тест валидации email
+./gradlew test --tests POMFlightsTests.test07WrongEmail
+
+# Тест валидации паспорта
+./gradlew test --tests POMFlightsTests.test08WrongPassportWithLetters
+
+# Тест валидации ФИО
+./gradlew test --tests POMFlightsTests.test09WrongFullNameWithDigits
+
+# Тест валидации даты
+./gradlew test --tests POMFlightsTests.test10PastDate
+
+# Запуск всех тестов валидации
+./gradlew test --tests POMFlightsTests.test07* --tests POMFlightsTests.test08* --tests POMFlightsTests.test09* --tests POMFlightsTests.test10*
 ```
 
 ## Генерация Allure отчетов
@@ -86,7 +112,13 @@ src/
 
 ## Настройка
 
-Тесты настроены на работу с приложением по адресу: `https://slqa.ru/cases/DeepSeekFlights/`
+Тесты настроены на работу с приложением по адресу: `https://slqamsk.github.io/cases/slflights/v01/`
+
+**Доступные версии приложения:**
+- **v01** (версия без ошибок): `https://slqamsk.github.io/cases/slflights/v01/`
+- **v02** (версия с ошибками): `https://slqamsk.github.io/cases/slflights/v02/`
+
+Для тестирования разных версий измените константу `BASE_URL` в классе `POMFlightsTests`.
 
 ## Page Object Model
 
