@@ -7,7 +7,7 @@ allure {
         version.set("2.29.0")
     }
     adapter { // отвечает за появление папочки build/allure-results
-        aspectjWeaver.set(true) //обработка аннотации @Step
+        aspectjWeaver.set(false) //обработка аннотации @Step (отключено из-за проблем с Java 25)
         frameworks {
             junit5 { //название фреймворка
                 adapterVersion.set("2.29.0") //версия интеграции фреймворка и Allure

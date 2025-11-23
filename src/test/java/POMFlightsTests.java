@@ -11,9 +11,15 @@ import pages.RegistrationPage;
 import pages.SearchPage;
 
 public class POMFlightsTests {
+    // URL приложения - можно менять для тестирования разных версий
+    // v01 - версия без ошибок: https://slqamsk.github.io/cases/slflights/v01/
+    // v02 - версия с ошибками: https://slqamsk.github.io/cases/slflights/v02/
+    // Базовая версия: https://slqamsk.github.io/cases/slflights/
+    private static final String BASE_URL = "https://slqamsk.github.io/cases/slflights/v01/";
+    
     @BeforeEach
     void setUp() {
-        open("https://slqa.ru/cases/DeepSeekFlights/");
+        open(BASE_URL);
         getWebDriver().manage().window().maximize();
     }
 
@@ -169,26 +175,19 @@ public class POMFlightsTests {
 
     @Step("Перейти на страницу поиска")
     void stepNavigateToSearchPage() {
-        // Простая логика: если мы на странице логина - логинимся, если на странице списка рейсов - нажимаем "Новый поиск"
-        // Метод search() сам проверит наличие элементов перед использованием
-        long originalTimeout = com.codeborne.selenide.Configuration.timeout;
-        try {
-            com.codeborne.selenide.Configuration.timeout = 5000;
-            // Проверяем, нужно ли выполнить логин
-            if ($("#username").exists()) {
-                LoginPage loginPage = new LoginPage();
-                loginPage.login("standard_user", "stand_pass1");
-                loginPage.isLoginSuccessful("Иванов Иван Иванович");
-            }
-            // Проверяем, нужно ли нажать "Новый поиск"
-            if ($x("//button[.='Новый поиск']").exists()) {
-                $x("//button[.='Новый поиск']").click();
-            }
-        } catch (Exception e) {
-            // Игнорируем ошибки - метод search() сам проверит наличие элементов
-        } finally {
-            com.codeborne.selenide.Configuration.timeout = originalTimeout;
+        // После back() мы можем быть на странице со списком рейсов
+        // Нужно нажать "Новый поиск", чтобы вернуться на страницу поиска
+        // Даем время браузеру обработать back()
+        sleep(1500);
+        
+        // Проверяем, есть ли кнопка "Новый поиск" (значит мы на странице со списком рейсов)
+        if ($x("//button[.='Новый поиск']").exists()) {
+            $x("//button[.='Новый поиск']").click();
+            sleep(1000);
         }
+        
+        // Теперь должны быть на странице поиска
+        // Метод search() сам проверит наличие элементов формы
     }
 
     @Step("Попытаться завершить регистрацию без номера паспорта")
@@ -204,5 +203,95 @@ public class POMFlightsTests {
         RegistrationPage registrationPage = new RegistrationPage();
         registrationPage.setPassportNumber(passportNumber);
         registrationPage.finishRegistration();
+    }
+
+    @Step("Ввести неправильный номер паспорта")
+    void stepSetWrongPassportNumber(String passportNumber) {
+        RegistrationPage registrationPage = new RegistrationPage();
+        registrationPage.clearPassportNumber();
+        registrationPage.setPassportNumber(passportNumber);
+        registrationPage.finishRegistration();
+    }
+
+    // 7. Некорректный email (без символа @)
+    @Test
+    @DisplayName("7. Некорректный email (без символа @)")
+    void test07WrongEmail() {
+        stepLoginSuccessfully("standard_user", "stand_pass1", "Иванов Иван Иванович");
+        stepSearchFlights("24.11.2025", "Москва", "Нью-Йорк");
+        stepRegisterToFirstFlight();
+        stepSetWrongEmail("userexample.com");
+        stepVerifyWrongEmail();
+    }
+
+    @Step("Ввести некорректный email без символа @")
+    void stepSetWrongEmail(String email) {
+        RegistrationPage registrationPage = new RegistrationPage();
+        registrationPage.clearEmail();
+        registrationPage.setEmail(email);
+        registrationPage.finishRegistration();
+    }
+
+    @Step("Проверить, что email некорректный")
+    void stepVerifyWrongEmail() {
+        RegistrationPage registrationPage = new RegistrationPage();
+        registrationPage.isWrongEmail();
+    }
+
+    // 8. Некорректный номер паспорта (буквы)
+    @Test
+    @DisplayName("8. Некорректный номер паспорта (буквы)")
+    void test08WrongPassportWithLetters() {
+        stepLoginSuccessfully("standard_user", "stand_pass1", "Иванов Иван Иванович");
+        stepSearchFlights("24.11.2025", "Москва", "Нью-Йорк");
+        stepRegisterToFirstFlight();
+        stepSetWrongPassportNumber("ABCDEFGH");
+        stepVerifyWrongPassportNumber();
+    }
+
+    // 9. Некорректное ФИО (цифры)
+    @Test
+    @DisplayName("9. Некорректное ФИО (цифры)")
+    void test09WrongFullNameWithDigits() {
+        stepLoginSuccessfully("standard_user", "stand_pass1", "Иванов Иван Иванович");
+        stepSearchFlights("24.11.2025", "Москва", "Нью-Йорк");
+        stepRegisterToFirstFlight();
+        stepSetWrongFullName("Иванов Иван123 Иванович");
+        stepVerifyWrongFullName();
+    }
+
+    @Step("Ввести некорректное ФИО с цифрами")
+    void stepSetWrongFullName(String fullName) {
+        RegistrationPage registrationPage = new RegistrationPage();
+        registrationPage.clearFullName();
+        registrationPage.setFullName(fullName);
+        registrationPage.finishRegistration();
+    }
+
+    @Step("Проверить, что ФИО некорректное")
+    void stepVerifyWrongFullName() {
+        RegistrationPage registrationPage = new RegistrationPage();
+        registrationPage.isWrongFullName();
+    }
+
+    // 10. Дата рейса в прошлом
+    @Test
+    @DisplayName("10. Дата рейса в прошлом")
+    void test10PastDate() {
+        stepLoginSuccessfully("standard_user", "stand_pass1", "Иванов Иван Иванович");
+        stepSearchFlightsWithPastDate("01.01.2020", "Москва", "Нью-Йорк");
+        stepVerifyPastDateError();
+    }
+
+    @Step("Выполнить поиск рейсов с датой в прошлом")
+    void stepSearchFlightsWithPastDate(String date, String departureCity, String arrivalCity) {
+        SearchPage searchPage = new SearchPage();
+        searchPage.search(date, departureCity, arrivalCity);
+    }
+
+    @Step("Проверить, что дата в прошлом вызывает ошибку")
+    void stepVerifyPastDateError() {
+        SearchPage searchPage = new SearchPage();
+        searchPage.isDepartureDateInPast();
     }
 }

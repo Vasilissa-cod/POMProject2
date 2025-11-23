@@ -34,6 +34,10 @@ public class SearchPage {
         this.message.shouldHave(text("Пожалуйста, укажите дату вылета."));
     }
 
+    public void isDepartureDateInPast() {
+        this.message.shouldHave(text("Невозможно осуществить поиск: выбранная дата уже прошла."));
+    }
+
     public void waitForPageLoad() {
         // Ждем загрузки страницы поиска - проверяем наличие ключевых элементов напрямую
         // Используем прямые вызовы $() для более надежного ожидания
